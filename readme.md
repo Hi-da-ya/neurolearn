@@ -28,7 +28,6 @@ This project aligns with the following UN Sustainable Development Goals (SDGs):
 ## 📦 Features
 
 - 📚 AI-generated learning modules
-- 📷 Visual aids for concept explanation
 - 🧾 NFT-based skill certificate (via smart contract)
 
 
@@ -37,5 +36,4 @@ This project aligns with the following UN Sustainable Development Goals (SDGs):
 1. User completes a skill module.
 2. Certificate metadata (name, module name, date) is minted as an NFT.
 3. NFT is stored on IPFS and tied to user's wallet.
-4. DAO members can vote on adding new modules or upgrades.
 
