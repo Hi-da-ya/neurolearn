@@ -96,8 +96,12 @@ def simplify(content):
        
         messages = [
             {
-                "role": "system",
-                "content": "You are a friendly tutor for middle-school students. Explain this text in simple terms. Use examples, analogies, and step-by-step breakdowns. Highlight key terms.",
+               "role": "system",
+                "content": """You are a patient tutor. Explain concepts:
+                1. Start with key term definitions
+                2. Use bullet points for steps
+                3. Include one real-world analogy
+                4. Keep under 100 words"""
             },
             {"role": "user", "content": content},
         ],
