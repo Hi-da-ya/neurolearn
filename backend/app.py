@@ -37,8 +37,15 @@ def extract_text(file_path, file_type):
 
 # Content simplification
 def simplify(content, profile):
-    PROMPTS = {
-        "autistic": """You are a patient science tutor teaching a middle school student. 
+    BASE_PROMPT = """Summarize the entire document by:
+    1. **Identifying major sections** (use original headings or group logically)
+    2. For each section:
+       - {profile_prompts}  # Placeholder for cognitive adaptations
+       - Include: Purpose, Key Points (3-5), Connection to other sections
+    3. Format with Markdown headings (###) and bullet points."""
+
+    PROFILE_PROMPTS = {
+        "autistic": """You are a patient science tutor teaching a middle school autistic student. 
         Explain this concept in 3 steps:
         1. Start with a concrete definition (avoid metaphors)
         2. Give a real-world example they encounter daily
@@ -55,26 +62,39 @@ def simplify(content, profile):
         Original: {content}""",
 
         "adhd": """You're an energetic tutor making science exciting for distractible minds:
-        [emoji] Start with a surprising fact 
-        [emoji] Explain in 2 bullet points
+        [emoji] Start with a surprising fun fact 
+        [emoji] Explain in 3 bullet points
         [emoji] Add a quick interactive element ("Point to something green around you!")
 
         Topic: {content}"""
     }
     
-    response = client.chat.completions.create(
-        model='gpt-35-turbo',
-        messages=[
-            {"role": "system", "content": PROMPTS[profile]},
-            {"role": "user", "content": content[:2000]}  # Limit input size
-        ],
-        max_tokens=500,
-        temperature=0.7 if profile == "adhd" else 0.3,
-        top_p=0.9,  
-        frequency_penalty=0.5,  
-        presence_penalty=0.5 
+    system_prompt = BASE_PROMPT.replace(
+        "{profile_prompts}", 
+        PROFILE_PROMPTS[profile]
     )
-    return response.choices[0].message.content
+
+    sections = content.split('\n\n')  # Simple split by double newlines (adapt as needed)
+    
+    summaries = []
+    for section in sections:
+        # 2. Process each section individually
+        if len(section) < 10:  # Skip tiny sections
+            continue
+        response = client.chat.completions.create(
+            model='gpt-35-turbo',
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": content[:16000]}  # Limit input size
+            ],
+            max_tokens=500,
+            temperature=0.7 if profile == "adhd" else 0.3,
+            top_p=0.9,  
+            frequency_penalty=0.5,  
+            presence_penalty=0.5 
+        )
+        summaries.append(response.choices[0].message.content)
+    return "\n\n".join(summaries)
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
