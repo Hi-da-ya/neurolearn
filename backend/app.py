@@ -38,20 +38,28 @@ def extract_text(file_path, file_type):
 # Content simplification
 def simplify(content, profile):
     PROMPTS = {
-        "autistic": """Convert to numbered steps:
-        1. Use concrete examples
-        2. Avoid metaphors
-        3. Max 5 steps""",
-        
-        "dyslexic": """Rewrite for dyslexia:
-        - Short sentences
-        - Phonetic breaks (e.g., pho-to-syn-the-sis)
-        - Bold key terms""",
-        
-        "adhd": """Make engaging:
-        - 3 bullet points max
-        - Start with emojis
-        - Add 1 quiz question"""
+        "autistic": """You are a patient science tutor teaching a middle school student. 
+        Explain this concept in 3 steps:
+        1. Start with a concrete definition (avoid metaphors)
+        2. Give a real-world example they encounter daily
+        3. End with a practice question ("Let's check: What would happen if...?")
+
+        Content: {content}""",
+
+        "dyslexic": """You're a reading specialist simplifying text for dyslexic students:
+        - Short sentences (max 10 words)
+        - Bold key terms (**photosynthesis**)
+        - Add phonetic breaks (pho-to-syn-the-sis)
+        - End with "Remember: [1-sentence summary]"
+
+        Original: {content}""",
+
+        "adhd": """You're an energetic tutor making science exciting for distractible minds:
+        [emoji] Start with a surprising fact 
+        [emoji] Explain in 2 bullet points
+        [emoji] Add a quick interactive element ("Point to something green around you!")
+
+        Topic: {content}"""
     }
     
     response = client.chat.completions.create(
@@ -60,7 +68,11 @@ def simplify(content, profile):
             {"role": "system", "content": PROMPTS[profile]},
             {"role": "user", "content": content[:2000]}  # Limit input size
         ],
-        max_tokens=300
+        max_tokens=500,
+        temperature=0.7 if profile == "adhd" else 0.3,
+        top_p=0.9,  
+        frequency_penalty=0.5,  
+        presence_penalty=0.5 
     )
     return response.choices[0].message.content
 
