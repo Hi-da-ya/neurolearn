@@ -7,22 +7,42 @@ from streamlit_extras.card import card
 BACKEND_URL = "http://localhost:5555/upload"
 PROFILES = {
     "autistic": {
-        "name": "Structured Steps",
+        "display_name": "Autistic Learners",
+        "approach_name": "Structured Steps",
         "icon": "🧩",
-        "description": "Clear, predictable learning paths with visual structure"
+        "description": "Clear, predictable learning paths with visual structure",
+        "features": [
+            "Visual schedules",
+            "Step-by-step breakdowns",
+            "Consistent formatting",
+            "Reduced sensory overload"
+        ]
     },
     "dyslexic": {
-        "name": "Phonetic Simplification", 
+        "display_name": "Dyslexic Learners",
+        "approach_name": "Phonetic Simplification", 
         "icon": "🔤",
-        "description": "Text adaptation with phonetic support and readability focus"
+        "description": "Text adaptation with phonetic support and readability focus",
+        "features": [
+            "Dyslexia-friendly fonts",
+            "Phonetic spellings",
+            "Enhanced spacing",
+            "Multi-sensory options"
+        ]
     },
     "adhd": {
-        "name": "Interactive Learning",
+        "display_name": "ADHD Learners",
+        "approach_name": "Interactive Learning",
         "icon": "⚡",
-        "description": "Engaging, dynamic content with frequent interaction points"
+        "description": "Engaging, dynamic content with frequent interaction points",
+        "features": [
+            "Chunked information",
+            "Interactive elements",
+            "Focus timers",
+            "Gamification"
+        ]
     }
 }
-
 # Session State
 if 'profile' not in st.session_state:
     st.session_state.profile = None
@@ -94,11 +114,11 @@ if not st.session_state.profile:
     for i, (profile_key, profile_data) in enumerate(PROFILES.items()):
         with cols[i]:
             clicked = card(
-                title=f"{profile_data['icon']} {profile_data['name']}",
+                title=f"{profile_data['icon']} {profile_data['display_name']}",
                 text=profile_data['description'],
                 key=f"card_{profile_key}"
             )
-            if clicked or st.button(f"Select {profile_data['name']}", key=f"btn_{profile_key}"):
+            if clicked or st.button(f"Select {profile_data['display_name']}", key=f"btn_{profile_key}"):
                 st.session_state.profile = profile_key
                 st.rerun()
 
