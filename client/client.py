@@ -174,53 +174,7 @@ def generate_certificate(profile_name, file_name, profile_icon):
            fill=(150, 150, 150), font=small_font, anchor="mm")
     
     return img
-    # Create blank image (800x600 pixels)
-    img = Image.new('RGB', (800, 600), color=(250, 245, 240))  # Cream background
-    
-    d = ImageDraw.Draw(img)
-    
-    # Colors based on profile
-    profile_colors = {
-        "autistic": (78, 121, 167),   # Muted blue
-        "dyslexic": (89, 161, 79),    # Leaf green
-        "adhd": (242, 142, 43)        # Vibrant orange
-    }
-    color = profile_colors.get(profile_name.lower(), (0, 0, 0))
-    
-    # Decorative border
-    d.rectangle([(50, 50), (750, 550)], outline=color, width=4)
-    d.rectangle([(60, 60), (740, 540)], outline=(200, 200, 200), width=2)
-    
-    try:
-        # Try to load nice fonts (will fall back to default if not available)
-        title_font = ImageFont.truetype("arialbd.ttf", 36)
-        main_font = ImageFont.truetype("arial.ttf", 24)
-        small_font = ImageFont.truetype("arial.ttf", 18)
-    except:
-        title_font = ImageFont.load_default()
-        main_font = ImageFont.load_default()
-        small_font = ImageFont.load_default()
-
-    d.text((400, 100), "NEUROLEARN ACHIEVEMENT", fill=color, 
-           font=title_font, anchor="mm")
-    
-    # Main text
-    content = f"""\n\nCertificate of Completion\n\n
-This certifies that the learning material:\n
-"{textwrap.fill(file_name, width=30)}"\n
-has been successfully adapted for\n
-{profile_icon} {profile_name} Learners\n\n
-Congratulations!"""
-    
-    d.multiline_text((400, 250), content, fill=(50, 50, 50), 
-                    font=main_font, anchor="mm", align="center", spacing=15)
-    
-    # Footer
-    d.text((400, 500), "neurolearn.ai | Empowering Diverse Minds", 
-           fill=(150, 150, 150), font=small_font, anchor="mm")
-    
-    return img    
-
+   
 # Header
 header_col1, header_col2 = st.columns([3,1])
 with header_col1:
@@ -329,11 +283,11 @@ else:
             if st.button("📝 Create Quiz", help="Generate practice questions from this content"):
                 st.info("Quiz generation coming soon!")
         
-        with tool_cols[1]:
+        with tool_cols[2]:
             if st.button("🔊 Audio Version", help="Listen to the adapted content"):
                 st.info("Audio conversion coming soon!")
         
-        with tool_cols[2]:
+        with tool_cols[1]:
             if st.button("🎓 Generate Certificate", type="primary"):
                 # Generate the certificate
                 cert = generate_certificate(
