@@ -18,7 +18,7 @@ This project aligns with the following UN Sustainable Development Goals (SDGs):
 
 ## 🛠 Tech Stack
 
-- **Frontend**: React, Tailwind CSS
+- **Frontend**: Python streamline
 - **AI**: OpenAI API / HuggingFace for content summarization
 - **Backend**: Python
 - **Blockchain/Web3**: Ethereum (EVM), NFT.storage/IPFS for certificates
