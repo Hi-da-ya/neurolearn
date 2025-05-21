@@ -1,7 +1,10 @@
 import streamlit as st
 import requests
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from streamlit_extras.card import card
+import textwrap
+import io
+import os
 
 # Config
 BACKEND_URL = "http://localhost:5555/upload"
@@ -91,11 +94,137 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
+#Certificate generation
+def generate_certificate(profile_name, file_name, profile_icon):
+    # Create blank image (800x600 pixels)
+    img = Image.new('RGB', (800, 600), color=(250, 245, 240))  # Cream background
+    d = ImageDraw.Draw(img)
+    
+    # Colors based on profile
+    profile_colors = {
+        "autistic": (78, 121, 167),   # Muted blue
+        "dyslexic": (89, 161, 79),    # Leaf green
+        "adhd": (242, 142, 43)        # Vibrant orange
+    }
+    color = profile_colors.get(profile_name.lower(), (0, 0, 0))
+    
+    # Decorative border
+    d.rectangle([(50, 50), (750, 550)], outline=color, width=4)
+    d.rectangle([(60, 60), (740, 540)], outline=(200, 200, 200), width=2)
+    
+    try:
+        # Try to load a Unicode-compatible font (Arial Unicode MS if available)
+        try:
+            title_font = ImageFont.truetype("arialuni.ttf", 36)  # Windows Unicode font
+        except:
+            try:
+                title_font = ImageFont.truetype("DejaVuSans.ttf", 36)  # Linux fallback
+            except:
+                title_font = ImageFont.load_default()
+        
+        main_font = ImageFont.truetype("arial.ttf", 24) if os.path.exists("arial.ttf") else title_font
+        small_font = ImageFont.truetype("arial.ttf", 18) if os.path.exists("arial.ttf") else title_font
+    except:
+        # Final fallback to default font
+        title_font = ImageFont.load_default()
+        main_font = ImageFont.load_default()
+        small_font = ImageFont.load_default()
+    
+    # Header - Without Unicode characters first for sizing
+    d.text((400, 100), "NEUROLEARN ACHIEVEMENT", fill=color, 
+           font=title_font, anchor="mm")
+    
+    # Main text - Handle Unicode characters carefully
+    content_lines = [
+        "Certificate of Completion",
+        "",
+        f"This certifies that the learning material:",
+        f'"{textwrap.fill(file_name, width=30)}"',
+        "has been successfully adapted for",
+        f"{profile_name} Learners",
+        "",
+        "Congratulations!"
+    ]
+    
+    y_position = 250
+    for line in content_lines:
+        if profile_icon in line:  # Handle icon separately
+            # Draw text before icon
+            parts = line.split(profile_icon)
+            if parts[0]:
+                d.text((400, y_position), parts[0], fill=(50, 50, 50), 
+                      font=main_font, anchor="mm")
+                # Get width to position icon
+                w = d.textlength(parts[0], font=main_font)
+                d.text((400 + w//2 + 10, y_position-5), profile_icon, 
+                      fill=color, font=main_font)
+                if parts[1]:
+                    d.text((400 + w//2 + 30, y_position), parts[1], 
+                          fill=(50, 50, 50), font=main_font)
+            else:
+                d.text((400, y_position), profile_icon, fill=color, 
+                      font=main_font, anchor="mm")
+        else:
+            d.text((400, y_position), line, fill=(50, 50, 50), 
+                  font=main_font, anchor="mm")
+        y_position += 40
+    
+    # Footer
+    d.text((400, 500), "neurolearn.ai | Empowering Diverse Minds", 
+           fill=(150, 150, 150), font=small_font, anchor="mm")
+    
+    return img
+    # Create blank image (800x600 pixels)
+    img = Image.new('RGB', (800, 600), color=(250, 245, 240))  # Cream background
+    
+    d = ImageDraw.Draw(img)
+    
+    # Colors based on profile
+    profile_colors = {
+        "autistic": (78, 121, 167),   # Muted blue
+        "dyslexic": (89, 161, 79),    # Leaf green
+        "adhd": (242, 142, 43)        # Vibrant orange
+    }
+    color = profile_colors.get(profile_name.lower(), (0, 0, 0))
+    
+    # Decorative border
+    d.rectangle([(50, 50), (750, 550)], outline=color, width=4)
+    d.rectangle([(60, 60), (740, 540)], outline=(200, 200, 200), width=2)
+    
+    try:
+        # Try to load nice fonts (will fall back to default if not available)
+        title_font = ImageFont.truetype("arialbd.ttf", 36)
+        main_font = ImageFont.truetype("arial.ttf", 24)
+        small_font = ImageFont.truetype("arial.ttf", 18)
+    except:
+        title_font = ImageFont.load_default()
+        main_font = ImageFont.load_default()
+        small_font = ImageFont.load_default()
+
+    d.text((400, 100), "NEUROLEARN ACHIEVEMENT", fill=color, 
+           font=title_font, anchor="mm")
+    
+    # Main text
+    content = f"""\n\nCertificate of Completion\n\n
+This certifies that the learning material:\n
+"{textwrap.fill(file_name, width=30)}"\n
+has been successfully adapted for\n
+{profile_icon} {profile_name} Learners\n\n
+Congratulations!"""
+    
+    d.multiline_text((400, 250), content, fill=(50, 50, 50), 
+                    font=main_font, anchor="mm", align="center", spacing=15)
+    
+    # Footer
+    d.text((400, 500), "neurolearn.ai | Empowering Diverse Minds", 
+           fill=(150, 150, 150), font=small_font, anchor="mm")
+    
+    return img    
 
 # Header
 header_col1, header_col2 = st.columns([3,1])
 with header_col1:
-    st.title(f"{'🧠 NeuroLearn' if not st.session_state.profile else PROFILES[st.session_state.profile]['icon']} NeuroLearn")
+    st.title(f"{'🧠 NeuroLearn' if not st.session_state.profile else PROFILES[st.session_state.profile]['icon']}")
     st.write("AI-Powered Learning for Neurodivergent Minds")
 with header_col2:
     if st.session_state.profile:
@@ -122,7 +251,6 @@ if not st.session_state.profile:
                 st.session_state.profile = profile_key
                 st.rerun()
 
-# Main App
 else:
     profile_data = PROFILES[st.session_state.profile]
     
@@ -136,7 +264,7 @@ else:
     
     # File Upload Section
     st.subheader("Step 1: Upload Your Learning Materials")
-    st.caption(f"We'll adapt these for your {profile_data['name']} profile")
+    st.caption(f"We'll adapt these for your {profile_data['approach_name']} profile")
     
     uploaded_file = st.file_uploader(
         "Drag and drop or click to upload notes (PDF/TXT/DOCX)", 
@@ -161,8 +289,8 @@ else:
     # Content Adaptation
     if st.session_state.uploaded_file and not st.session_state.content:
         st.subheader("Step 2: Adapt Content")
-        if st.button(f"✨ Adapt for {profile_data['name']}", type="primary"):
-            with st.spinner(f"Customizing for {profile_data['name']}..."):
+        if st.button(f"✨ Adapt for {profile_data['approach_name']}", type="primary"):
+            with st.spinner(f"Customizing for {profile_data['approach_name']}..."):
                 files = {"file": st.session_state.uploaded_file}
                 data = {"profile": st.session_state.profile}
                 response = requests.post(BACKEND_URL, files=files, data=data)
@@ -180,7 +308,7 @@ else:
             <b>Original File:</b> {} • <b>Adaptation Profile:</b> {}
             </div>""".format(
                 st.session_state.uploaded_file.name,
-                profile_data['name']
+                profile_data['approach_name']
             ), unsafe_allow_html=True)
         
         tab1, tab2 = st.tabs(["Formatted View", "Raw Text"])
@@ -207,11 +335,29 @@ else:
         
         with tool_cols[2]:
             if st.button("🎓 Generate Certificate", type="primary"):
-                cert = Image.open("assets/certificate.png")
-                st.image(cert, caption=f"NeuroLearn Achievement - {st.session_state.uploaded_file.name}")
+                # Generate the certificate
+                cert = generate_certificate(
+                    profile_data['display_name'].replace(" Learners", ""),
+                    st.session_state.uploaded_file.name,
+                    profile_data['icon']
+                )
+                
+                # Display and offer download
+                st.image(cert, caption="Your NeuroLearn Achievement Certificate")
                 st.balloons()
-                st.success("Certificate generated! Download available soon.")
-        
+                
+                # Convert to bytes for download
+                buf = io.BytesIO()
+                cert.save(buf, format="PNG")
+                
+                st.download_button(
+                    label="⬇️ Download Certificate",
+                    data=buf.getvalue(),
+                    file_name=f"neurolearn_certificate_{st.session_state.profile}.png",
+                    mime="image/png",
+                    help="Save your achievement certificate"
+                )
+                st.success("Certificate generated successfully!")
         # Feedback
         st.divider()
         with st.expander("💬 Provide Feedback on This Adaptation"):
